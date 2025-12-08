@@ -1,0 +1,59 @@
+<mjml>
+  <mj-head>
+    <mj-title>Thank you for your feedback</mj-title>
+    <mj-attributes>
+      <mj-all font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" />
+    </mj-attributes>
+    <mj-style>
+      .gradient-header {
+        background: linear-gradient(135deg, #ffe0e3 0%, #ffb8c1 100%) !important;
+      }
+      .gradient-footer {
+        background: linear-gradient(135deg, #ffe0e3 0%, #ffb8c1 100%) !important;
+      }
+      .email-container {
+        border-radius: 12px !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+      }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#f4f4f4">
+    <mj-wrapper padding="20px 10px">
+      <!-- Header Section with gradient -->
+      <mj-section css-class="gradient-header email-container" background-color="#ffe0e3" border-radius="12px 12px 0 0" padding="20px 15px">
+        <mj-column>
+          <mj-image src="https://server.megamedia.megagera.com/megagera/MegaGoal.png" alt="MegaGoal" width="200px" align="center" padding="0" />
+        </mj-column>
+      </mj-section>
+      
+      <!-- Content Section -->
+      <mj-section background-color="#ffffff" padding="30px 20px">
+        <mj-column>
+          <mj-text color="#333333" font-size="18px" line-height="1.6" padding-bottom="20px" padding-top="0">
+            Thank you for your feedback{{USERNAME}}!
+          </mj-text>
+          
+          <mj-text color="#555555" font-size="16px" line-height="1.8" padding-bottom="20px" padding-top="0">
+            We truly appreciate you taking the time to share your thoughts with us. Your feedback is <strong style="color: #dc143c;">incredibly valuable</strong> and helps us improve. We're reviewing your comments and will work on implementing improvements based on your suggestions.
+          </mj-text>
+          
+          <mj-text color="#555555" font-size="16px" line-height="1.8" padding-bottom="20px" padding-top="20px">
+            This is a new project and you are one of the first people using it, this is why your feedback about the application is even more important. Feel free to share all your thoughts and comments that you can have!
+          </mj-text>
+          
+          <mj-text color="#555555" font-size="16px" line-height="1.8" padding-top="20px" padding-bottom="0">
+            There are a lot of more things coming in! You can follow us in our <a href="https://x.com/MegaGoalApp" style="color: #dc143c; text-decoration: none; font-weight: 600;">X account</a> and continue using the <a href="https://megagoal.megagera.com" style="color: #dc143c; text-decoration: none; font-weight: 600;">MegaGoal application at megagoal.megagera.com</a> to stay tuned of all the updates!
+          </mj-text>
+        </mj-column>
+      </mj-section>
+      
+      <!-- Footer Section with gradient -->
+      <mj-section css-class="gradient-footer email-container" background-color="#ffe0e3" border-radius="0 0 12px 12px" padding="20px 15px">
+        <mj-column>
+          <mj-image src="https://server.megamedia.megagera.com/megagera/MG_logo.png" alt="MegaGoal" width="250px" align="center" padding="0 0 15px 0" />
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>
+

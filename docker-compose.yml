@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  megamail_server:
+    image: megamail_server
+    container_name: megamail_server
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - ENV=production
+    volumes:
+      - ./templates:/app/templates
+      - ./assets:/app/assets
+    networks:
+      - megagera_network
+
+networks:
+  megagera_network:
+    external: true
+
+
