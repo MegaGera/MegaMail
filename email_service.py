@@ -30,6 +30,21 @@ def _metric_row(label, value):
     )
 
 
+def _section_title(text):
+    return (
+        f'<p style="margin:14px 0 6px 0;color:#444;font-size:13px;font-weight:600;">'
+        f'{html.escape(text)}</p>'
+    )
+
+
+def _user_identity(user):
+    username = html.escape(str(user.get('username') or 'unknown'))
+    email = user.get('email')
+    if email:
+        return f'<strong>{username}</strong> &lt;{html.escape(str(email))}&gt;'
+    return f'<strong>{username}</strong>'
+
+
 def _build_auth_html(auth):
     auth = auth or {}
     parts = [
@@ -37,7 +52,7 @@ def _build_auth_html(auth):
         _metric_row('Total logins', auth.get('loginsTotal', 0)),
         _metric_row('Normal logins', auth.get('loginsNormal', 0)),
         _metric_row('Test logins', auth.get('loginsTest', 0)),
-        _metric_row('Distinct users logged in', auth.get('distinctLoginUsers', 0)),
+        _metric_row('Distinct users', len(auth.get('distinctUsers') or []) or auth.get('distinctLoginUsers', 0)),
     ]
 
     if auth.get('passwordChanged'):
@@ -47,19 +62,17 @@ def _build_auth_html(auth):
     if auth.get('testUsersCreated'):
         parts.append(_metric_row('Test users created', auth.get('testUsersCreated', 0)))
 
+    distinct_users = auth.get('distinctUsers') or []
+    if distinct_users:
+        parts.append(_section_title('Users'))
+        for user in distinct_users:
+            parts.append(f'<p class="user-line">• {_user_identity(user)}</p>')
+
     new_users = auth.get('newUsers') or []
     if new_users:
-        parts.append('<p style="margin:14px 0 6px 0;color:#444;font-size:13px;font-weight:600;">New registrations</p>')
+        parts.append(_section_title('New registrations'))
         for user in new_users:
-            username = html.escape(str(user.get('username') or 'unknown'))
-            email = user.get('email')
-            if email:
-                parts.append(
-                    f'<p class="user-line">• <strong>{username}</strong> '
-                    f'&lt;{html.escape(str(email))}&gt;</p>'
-                )
-            else:
-                parts.append(f'<p class="user-line">• <strong>{username}</strong> <span class="muted">(no email)</span></p>')
+            parts.append(f'<p class="user-line">• {_user_identity(user)}</p>')
     elif auth.get('newUsersCount', 0) == 0:
         parts.append('<p class="muted" style="margin-top:10px;">No new registrations in this period.</p>')
 
@@ -83,13 +96,69 @@ def _build_megagoal_html(goal):
         _metric_row('Feedback submitted', goal.get('feedbackSubmitted', 0)),
     ]
 
+    users = goal.get('users') or []
+    if users:
+        parts.append(_section_title('Users (sessions)'))
+        for user in users:
+            username = html.escape(str(user.get('username') or 'unknown'))
+            sessions = html.escape(str(user.get('sessions', 0)))
+            parts.append(f'<p class="user-line">• <strong>{username}</strong> ({sessions})</p>')
+
+    matches_created = goal.get('matchesCreatedList') or []
+    if matches_created:
+        parts.append(_section_title('Matches created'))
+        for match in matches_created:
+            label = html.escape(str(match.get('label') or 'Unknown match'))
+            username = html.escape(str(match.get('username') or 'unknown'))
+            parts.append(f'<p class="user-line">• {label} <span class="muted">by {username}</span></p>')
+
+    by_match = interactions.get('byMatch') or []
+    if by_match:
+        parts.append(_section_title('Interactions by match'))
+        for item in by_match:
+            label = html.escape(str(item.get('label') or 'Unknown match'))
+            count = html.escape(str(item.get('count', 0)))
+            type_bits = []
+            if item.get('reaction'):
+                type_bits.append(f"reactions {item['reaction']}")
+            if item.get('match_rating'):
+                type_bits.append(f"ratings {item['match_rating']}")
+            if item.get('player_voted'):
+                type_bits.append(f"votes {item['player_voted']}")
+            if item.get('other'):
+                type_bits.append(f"other {item['other']}")
+            detail = f" — {', '.join(type_bits)}" if type_bits else ''
+            users_list = item.get('users') or []
+            users_txt = f" [{', '.join(html.escape(u) for u in users_list)}]" if users_list else ''
+            parts.append(
+                f'<p class="user-line">• {label} <strong>({count})</strong>'
+                f'<span class="muted">{html.escape(detail)}{users_txt}</span></p>'
+            )
+
+    favourite_teams = goal.get('favouriteTeams') or []
+    favourite_leagues = goal.get('favouriteLeagues') or []
+    if favourite_teams or favourite_leagues:
+        parts.append(_section_title('Favourites added'))
+        for item in favourite_teams:
+            name = html.escape(str(item.get('name') or 'Unknown team'))
+            username = html.escape(str(item.get('username') or 'unknown'))
+            parts.append(f'<p class="user-line">• Team: {name} <span class="muted">by {username}</span></p>')
+        for item in favourite_leagues:
+            name = html.escape(str(item.get('name') or 'Unknown league'))
+            username = html.escape(str(item.get('username') or 'unknown'))
+            parts.append(f'<p class="user-line">• League: {name} <span class="muted">by {username}</span></p>')
+
     page_views = goal.get('pageViews') or []
     if page_views:
-        parts.append('<p style="margin:14px 0 8px 0;color:#444;font-size:13px;font-weight:600;">Page views</p>')
+        parts.append(_section_title('Page views'))
         for item in page_views:
             page = html.escape(str(item.get('page') or 'unknown'))
             count = html.escape(str(item.get('count', 0)))
             parts.append(f'<span class="chip">{page}: {count}</span>')
+            for entity in item.get('items') or []:
+                name = html.escape(str(entity.get('name') or 'unknown'))
+                entity_count = html.escape(str(entity.get('count', 0)))
+                parts.append(f'<p class="user-line" style="margin-left:8px;">↳ {name} ({entity_count})</p>')
     else:
         parts.append('<p class="muted" style="margin-top:10px;">No page views logged in this period.</p>')
 
