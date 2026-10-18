@@ -116,10 +116,20 @@ def load_mjml_template(template_path, username=None, replacements=None):
                 mjml_content = mjml_content.replace(f"{{{{{key}}}}}", str(value))
 
         html_output = mjml.mjml_to_html(mjml_content)
-        if html_output.get('errors'):
-            raise Exception(f"MJML compilation errors: {html_output['errors']}")
+        # mjml may return a dict or a ParseResult-like object
+        if isinstance(html_output, dict):
+            errors = html_output.get('errors')
+            html_body = html_output.get('html')
+        else:
+            errors = getattr(html_output, 'errors', None)
+            html_body = getattr(html_output, 'html', None)
 
-        return html_output['html']
+        if errors:
+            raise Exception(f"MJML compilation errors: {errors}")
+        if not html_body:
+            raise Exception("MJML compilation returned empty HTML")
+
+        return html_body
     except FileNotFoundError:
         raise FileNotFoundError(f"MJML template not found at: {template_file}")
     except Exception as e:

@@ -122,7 +122,10 @@ def process_message(ch, method, properties, body):
             "Email address is not verified",
             "not verified",
             "Invalid template type",
-            "Missing required field"
+            "Missing required field",
+            "MJML compilation errors",
+            "Error processing MJML template",
+            "MJML compilation returned empty HTML",
         ]
         
         is_permanent = any(permanent_error.lower() in error_message.lower() for permanent_error in permanent_errors)
