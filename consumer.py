@@ -37,9 +37,12 @@ QUEUE_NAME = os.getenv('QUEUE_NAME', 'mailing')
 AWS_REGION = os.getenv('AWS_REGION', 'eu-west-1')
 SENDER = os.getenv('SENDER', 'no-reply@megagera.com')
 SENDER_NAME = os.getenv('SENDER_NAME', 'MegaGoal')  # Display name in email clients
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+VALID_TEMPLATES = ('feedback', 'register', 'daily_resume')
 
 if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
     logger.error("⚠ AWS credentials not found! Email sending will fail.")
@@ -55,36 +58,48 @@ def process_message(ch, method, properties, body):
     
     Expected message format (JSON):
     {
-        "recipient": "user@example.com",
-        "template": "feedback" | "register",
+        "recipient": "user@example.com",  # optional for daily_resume (uses ADMIN_EMAIL)
+        "template": "feedback" | "register" | "daily_resume",
         "username": "Optional username for personalization",
-        "subject": "Optional custom subject"
+        "subject": "Optional custom subject",
+        "stats": { ... }  # required for daily_resume
     }
     """
     try:
         # Parse message
         message = json.loads(body.decode('utf-8'))
         logger.info(f"Received message: {message}")
-        
-        # Validate required fields
-        if 'recipient' not in message:
-            raise ValueError("Missing required field: 'recipient'")
-        
-        recipient = message['recipient']
+
         template_type = message.get('template', 'feedback')  # Default to feedback
+        if template_type not in VALID_TEMPLATES:
+            raise ValueError(
+                f"Invalid template type: {template_type}. "
+                "Must be 'feedback', 'register', or 'daily_resume'"
+            )
+
+        recipient = message.get('recipient')
+        if not recipient and template_type == 'daily_resume':
+            recipient = ADMIN_EMAIL
+
+        if not recipient:
+            raise ValueError("Missing required field: 'recipient' (or ADMIN_EMAIL for daily_resume)")
+
+        if template_type == 'daily_resume' and not message.get('stats'):
+            raise ValueError("Missing required field: 'stats' for daily_resume template")
+
         username = message.get('username')  # Optional username
-        
-        # Validate template type
-        if template_type not in ['feedback', 'register']:
-            raise ValueError(f"Invalid template type: {template_type}. Must be 'feedback' or 'register'")
-        
+
         # Send email
-        logger.info(f"Sending {template_type} email to {recipient}" + (f" (username: {username})" if username else ""))
+        logger.info(
+            f"Sending {template_type} email to {recipient}"
+            + (f" (username: {username})" if username else "")
+        )
         response = email_service.send_email(
             recipient=recipient,
             template_type=template_type,
             username=username,
-            subject=message.get('subject')
+            subject=message.get('subject'),
+            stats=message.get('stats')
         )
         
         logger.info(f"Email sent successfully! Message ID: {response['MessageId']}")

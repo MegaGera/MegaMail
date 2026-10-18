@@ -8,7 +8,7 @@ A microservice for sending emails using AWS SES and MJML templates, integrated w
 - 📧 **AWS SES Integration**: Send emails via Amazon Simple Email Service
 - 🐰 **RabbitMQ Consumer**: Process email requests from message queues
 - 🐳 **Docker Support**: Full Docker and Docker Compose setup
-- 📝 **Multiple Templates**: Support for feedback and registration emails
+- 📝 **Multiple Templates**: Support for feedback, registration, and daily resume emails
 
 ## How It Works
 
@@ -19,7 +19,9 @@ MegaMail is a message queue-based email service that processes email requests fr
 3. **Renders MJML templates** into HTML email content
 4. **Sends emails** via AWS SES to the specified recipients
 
-The microservice supports multiple email templates (feedback, registration, etc.) and can be deployed using Docker for easy integration into larger systems.
+The microservice supports multiple email templates (feedback, registration, daily resume) and can be deployed using Docker for easy integration into larger systems.
+
+For `daily_resume`, if `recipient` is omitted, MegaMail uses `ADMIN_EMAIL`.
 
 ## Project Structure
 
@@ -28,7 +30,8 @@ MegaMail/
 ├── assets/              # Image assets for emails
 ├── templates/           # MJML email templates
 │   ├── feedback_email_template.mjml
-│   └── register_email_template.mjml
+│   ├── register_email_template.mjml
+│   └── daily_resume_email_template.mjml
 ├── consumer.py          # RabbitMQ consumer service
 ├── email_service.py     # Email sending service
 ├── docker-compose.yml   # Docker Compose configuration
